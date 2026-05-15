@@ -79,6 +79,222 @@
         #wave-banner { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; z-index: 8; display: none; text-align: center; }
         #wave-banner .wb-text { font-size: 48px; font-weight: bold; color: #ff8800; text-shadow: 0 0 30px #ff4400; letter-spacing: 6px; }
         #wave-banner .wb-sub  { font-size: 18px; color: #ffaa44; margin-top: 8px; }
+        /* Кнопка магазина на экране */
+.shop-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  font-size: 18px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  border: 3px solid #FF8C00;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shop-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.shop-button:active {
+  transform: scale(0.95);
+}
+
+/* Экран магазина */
+.shop-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.shop-screen.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.shop-container {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 3px solid #FFD700;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+  color: #fff;
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #FFD700;
+  padding-bottom: 15px;
+}
+
+.shop-header h2 {
+  margin: 0;
+  font-size: 32px;
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.close-btn {
+  background: #ff4444;
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: #ff0000;
+  transform: rotate(90deg);
+}
+
+.shop-coins {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.shop-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.shop-item {
+  background: rgba(255, 215, 0, 0.1);
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shop-item:hover {
+  background: rgba(255, 215, 0, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.shop-item.sold-out {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #666;
+}
+
+.shop-item.sold-out:hover {
+  background: rgba(255, 215, 0, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+.shop-item-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.shop-item-name {
+  font-weight: bold;
+  color: #FFD700;
+  margin-bottom: 5px;
+}
+
+.shop-item-desc {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 10px;
+  min-height: 20px;
+}
+
+.shop-item-cost {
+  color: #00FF00;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.shop-item-bought {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #00FF00, #00AA00);
+  color: #000;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.buy-btn:disabled {
+  background: #555;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.continue-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  background: linear-gradient(135deg, #00FF00, #00AA00);
+  color: #000;
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.continue-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.continue-btn:active {
+  transform: scale(0.95);
+}
+
     </style>
 </head>
 <body>
@@ -91,6 +307,28 @@
     <div id="level-ui">Уровень: <span id="levelVal">1</span></div>
     <div id="xp-container"><div id="xp-fill"></div></div>
     <div id="wave-ui">Волна: <span id="waveVal">1</span></div>
+</div>
+<!-- Кнопка магазина в игре -->
+<button id="shopButton" class="shop-button">🛍️ Магазин</button>
+
+<!-- Экран магазина -->
+<div id="shopScreen" class="shop-screen hidden">
+  <div class="shop-container">
+    <div class="shop-header">
+      <h2>МАГАЗИН</h2>
+      <button id="closeShopBtn" class="close-btn">✕</button>
+    </div>
+    
+    <div class="shop-coins">
+      💰 Монеты: <span id="shopCoins">0</span>
+    </div>
+    
+    <div class="shop-items" id="shopItems">
+      <!-- Товары будут вставлены сюда JavaScript -->
+    </div>
+    
+    <button id="continueBtnShop" class="continue-btn">Продолжить игру</button>
+  </div>
 </div>
 
 <div id="abilities-bar">
@@ -1100,6 +1338,7 @@ function loop(){
         if(gameState==='playing') requestAnimationFrame(loop);
     }
 }
+
 </script>
 </body>
 </html>
