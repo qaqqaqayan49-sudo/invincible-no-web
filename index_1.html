@@ -135,13 +135,18 @@
   border: 3px solid #FFD700;
   border-radius: 15px;
   padding: 30px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
+  max-width: 850px;
+  width: 92%;
+  max-height: 85vh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #FFD700 transparent;
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
   color: #fff;
 }
+.shop-container::-webkit-scrollbar { width: 6px; }
+.shop-container::-webkit-scrollbar-track { background: transparent; }
+.shop-container::-webkit-scrollbar-thumb { background: #FFD700; border-radius: 3px; }
 
 .shop-header {
   display: flex;
@@ -160,21 +165,26 @@
 }
 
 .close-btn {
-  background: #ff4444;
+  background: #c0392b;
   border: none;
-  color: white;
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  color: #fff;
+  font-size: 22px;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
-  background: #ff0000;
-  transform: rotate(90deg);
+  background: #e74c3c;
+  transform: scale(1.15);
 }
 
 .shop-coins {
@@ -199,6 +209,7 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: 180px;
 }
 
 .shop-item:hover {
@@ -220,8 +231,9 @@
 }
 
 .shop-item-icon {
-  font-size: 40px;
+  font-size: 48px;
   margin-bottom: 10px;
+  line-height: 1.2;
 }
 
 .shop-item-name {
@@ -295,6 +307,30 @@
   transform: scale(0.95);
 }
 
+/* Скины */
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .skin-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.skin-card { background: rgba(0, 0, 0, 0.7); border: 1px solid #555; border-radius: 12px; padding: 12px 10px 14px; text-align: center; cursor: pointer; transition: all 0.25s ease; }
+.skin-card:hover { transform: scale(1.10); border-color: #FFD700; }
+.skin-card.active { border-color: #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+.skin-preview-wrap { background: rgba(0,0,0,0.4); border-radius: 10px; padding: 8px 0 0; display: inline-block; width: 100%; margin-bottom: 4px; }
+.skin-preview-wrap canvas { display: block; margin: 0 auto; max-width: 90px; max-height: 100px; image-rendering: pixelated; opacity: 0; transition: opacity 0.5s ease; }
+.skin-preview-wrap canvas.loaded { opacity: 1; }
+.skin-card .sc-name { font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 2px; }
+.skin-card .sc-price { font-size: 11px; color: #FFD700; margin-bottom: 8px; min-height: 14px; }
+.skin-card .sc-btn { display: inline-block; padding: 5px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit; letter-spacing: 0.5px; }
+.skin-card .sc-btn.select { background: #FFD700; color: #000; }
+.skin-card .sc-btn.select:hover { background: #ffed4a; }
+.skin-card .sc-btn.buy { background: #00aa00; color: #fff; }
+.skin-card .sc-btn.buy:hover { background: #00cc00; }
+.skin-card .sc-btn.owned { background: #555; color: #aaa; cursor: default; }
     </style>
 </head>
 <body>
@@ -328,6 +364,20 @@
     </div>
     
     <button id="continueBtnShop" class="continue-btn">Продолжить игру</button>
+    <button id="skinsBtn" class="continue-btn" style="margin-top:8px;border-color:#FFD700;color:#FFD700;">🎨 Скины</button>
+  </div>
+</div>
+
+<!-- Экран выбора скинов -->
+<div id="skinScreen" class="shop-screen hidden">
+  <div class="shop-container">
+    <div class="shop-header">
+      <h2>🎨 ВЫБОР СКИНА</h2>
+      <button id="closeSkinBtn" class="close-btn">✕</button>
+    </div>
+    <div class="skin-grid" id="skinItems">
+    </div>
+    <button id="backToShopBtn" class="continue-btn">← Назад в магазин</button>
   </div>
 </div>
 
@@ -424,8 +474,8 @@ let player = {
 
 // ── ABILITIES ──
 const ABILITIES = [
-    { name:'Щит',    icon:'🛡️', desc:'Защита от урона 3 сек', cooldown:600, timer:0, active:false, activeTimer:0, key:'Q', keyCode:'KeyQ' },
-    { name:'Молния', icon:'⚡', desc:'Удар по всем врагам вокруг', cooldown:400, timer:0, active:false, activeTimer:0, key:'E', keyCode:'KeyE' },
+    { name:'Щит',    icon:'🛡️', desc:'Защита от урона 3 сек', cooldown:600, timer:0, active:false, activeTimer:0, duration:180, key:'Q', keyCode:'KeyQ' },
+    { name:'Молния', icon:'⚡', desc:'Удар по всем врагам вокруг', cooldown:400, timer:0, active:false, activeTimer:0, range:280, key:'E', keyCode:'KeyE' },
     { name:'Взрыв',  icon:'💥', desc:'Взрыв всех снарядов', cooldown:500, timer:0, active:false, activeTimer:0, key:'R', keyCode:'KeyR' },
 ];
 
@@ -446,9 +496,30 @@ function getRageMultiplier() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  IMAGES
+//  IMAGES / SKINS
 // ════════════════════════════════════════════════════════════════
 const images = {};
+let currentSkin = 'mark';
+
+const SKINS = [
+    { id:'mark',  name:'Mark',     file:'mark.png',      cost:0,   bought:1 },
+    { id:'skin1', name:'Скин 1',   file:'skin1_pdf.png', cost:500, bought:0 },
+    { id:'skin2', name:'Скин 2',   file:'skin2_pdf.png', cost:500, bought:0 },
+    { id:'skin3', name:'Скин 3',   file:'skin3_pdf.png', cost:500, bought:0 },
+    { id:'skin4', name:'Скин 4',   file:'skin4_pdf.png', cost:500, bought:0 },
+    { id:'skin5', name:'Скин 5',   file:'skin5_pdf.png', cost:500, bought:0 },
+    { id:'skin6', name:'Скин 6',   file:'skin6_pdf.png', cost:500, bought:0 },
+    { id:'skin7', name:'Скин 7',   file:'skin7_pdf.png', cost:500, bought:0 },
+    { id:'skin_blue', name:'Blue', file:'skin_blue.png', cost:500, bought:0 },
+];
+function loadSkin(skin) {
+    if (skin.id === 'mark') return; // mark already loaded via data URI
+    const img = new Image();
+    img.onload = () => { images[skin.id] = img; };
+    img.onerror = () => {};
+    img.src = 'images/' + skin.file;
+}
+SKINS.forEach(loadSkin);
 function makePlaceholder(name, w, h) {
     const c = document.createElement('canvas'); c.width=w; c.height=h;
     const cx = c.getContext('2d');
@@ -530,7 +601,7 @@ function addScore(amount) {
     score += amount;
     coins += Math.floor(amount * 0.1);
     document.getElementById('scoreVal').innerText = score;
-    document.getElementById('coinVal').innerText = coins;
+    updateCoinDisplay();
     try {
         const hs=Math.max(parseInt(localStorage.getItem('highScore')||'0',10),0);
         if(score>hs) localStorage.setItem('highScore',String(score));
@@ -546,13 +617,18 @@ function addScore(amount) {
 function levelUp() {
     player.xp -= player.xpToNext;
     player.level++;
-    player.xpToNext = Math.floor(player.xpToNext * 1.5);
+    player.xpToNext = Math.floor(player.xpToNext * 1.25 + 10);
     const bonuses = [
-        ()=>{ player.maxHp++; player.hp=Math.min(player.hp+1,player.maxHp); return '+1 Жизнь'; },
-        ()=>{ player.dashCooldownMax=Math.max(20,player.dashCooldownMax-5); return 'Рывок быстрее'; },
-        ()=>{ player.dashRadius+=15; return 'Радиус удара +15'; },
-        ()=>{ ABILITIES[0].cooldown=Math.max(200,ABILITIES[0].cooldown-60); return 'Щит CD−'; },
-        ()=>{ ABILITIES[1].cooldown=Math.max(150,ABILITIES[1].cooldown-50); return 'Молния CD−'; },
+        ()=>{ player.maxHp++; player.hp=Math.min(player.hp+1,player.maxHp); updateHearts(); return '❤️ +1 Жизнь'; },
+        ()=>{ player.dashCooldownMax=Math.max(15,player.dashCooldownMax-6); return '⚡ Рывок быстрее'; },
+        ()=>{ player.dashRadius+=15; return '💥 Радиус рывка +15'; },
+        ()=>{ ABILITIES[0].duration+=30; ABILITIES[0].cooldown=Math.max(200,ABILITIES[0].cooldown-50); return '🛡️ Щит дольше и CD−'; },
+        ()=>{ ABILITIES[1].cooldown=Math.max(150,ABILITIES[1].cooldown-50); return '⚡ Молния CD−'; },
+        ()=>{ ABILITIES[1].range=(ABILITIES[1].range||280)+40; return '⚡ Радиус молнии +40'; },
+        ()=>{ ABILITIES[2].cooldown=Math.max(200,ABILITIES[2].cooldown-60); return '💣 Взрыв CD−'; },
+        ()=>{ player.dashRadius+=20; player.dashDmg+=0.5; return '💥 Рывок сильнее +радиус'; },
+        ()=>{ player.maxHp++; player.hp=Math.min(player.hp+1,player.maxHp); updateHearts(); return '❤️ +1 Жизнь'; },
+        ()=>{ ABILITIES[0].cooldown=Math.max(180,ABILITIES[0].cooldown-60); ABILITIES[0].duration+=20; return '🛡️ Щит ещё быстрее'; },
     ];
     const bonusFn = bonuses[(player.level-2) % bonuses.length];
     const bonusText = bonusFn();
@@ -615,35 +691,47 @@ window.goMenu=function(){
 // ════════════════════════════════════════════════════════════════
 //  SHOP
 // ════════════════════════════════════════════════════════════════
+function updateCoinDisplay() {
+    document.getElementById('coinVal').innerText = coins;
+    const sc = document.getElementById('shopCoins');
+    if (sc) sc.innerText = coins;
+}
 function openShop() {
     gameState='shop'; isPaused=true;
     renderShop();
-    document.getElementById('shop-screen').classList.add('open');
+    document.getElementById('shopScreen').classList.remove('hidden');
 }
 function closeShop() {
+    document.getElementById('shopScreen').classList.add('hidden');
     document.getElementById('shop-screen').classList.remove('open');
     gameState='playing'; isPaused=false;
     requestAnimationFrame(loop);
 }
 function renderShop() {
-    document.getElementById('coinVal').innerText=coins;
-    const grid=document.getElementById('shop-grid'); grid.innerHTML='';
+    updateCoinDisplay();
+    const container=document.getElementById('shopItems');
+    if (!container) return;
+    container.innerHTML='';
     SHOP_ITEMS.forEach(item=>{
         const soldOut=item.bought>=item.maxBuy, canAfford=coins>=item.cost;
         const d=document.createElement('div');
-        d.className='shop-item'+(soldOut?' sold':'');
-        d.innerHTML=`<div class="si-icon">${item.icon}</div>
-            <div class="si-name">${item.name}${item.maxBuy>1?' ('+item.bought+'/'+item.maxBuy+')':''}</div>
-            <div class="si-desc">${item.desc}</div>
-            <div class="si-cost">${soldOut?'Куплено':'💰 '+item.cost}</div>`;
-        if(!soldOut){ d.style.opacity=canAfford?'1':'0.5'; d.onclick=()=>buyItem(item); }
-        grid.appendChild(d);
+        d.className='shop-item'+(soldOut?' sold-out':'');
+        d.innerHTML=`<div class="shop-item-icon">${item.icon}</div>
+            <div class="shop-item-name">${item.name}</div>
+            <div class="shop-item-desc">${item.desc}</div>
+            <div class="shop-item-cost">${soldOut?'✅ Куплено':'💰 '+item.cost}</div>
+            ${item.maxBuy>1?('<div class="shop-item-bought">Куплено: '+item.bought+'/'+item.maxBuy+'</div>'):''}
+            <button class="buy-btn" ${soldOut||!canAfford?'disabled':''}>${soldOut?'Куплено':(canAfford?'Купить':'Нет монет')}</button>`;
+        if(!soldOut&&canAfford){
+            d.querySelector('.buy-btn').onclick=(e)=>{ e.stopPropagation(); buyItem(item); };
+        }
+        container.appendChild(d);
     });
 }
 function buyItem(item) {
     if(item.bought>=item.maxBuy||coins<item.cost) return;
     coins-=item.cost; item.bought++;
-    document.getElementById('coinVal').innerText=coins;
+    updateCoinDisplay();
     switch(item.id){
         case 'maxhp':      player.maxHp++; player.hp=Math.min(player.hp+1,player.maxHp); updateHearts(); break;
         case 'dash':       player.dashCooldownMax=Math.max(15,Math.floor(player.dashCooldownMax*0.8)); break;
@@ -656,6 +744,114 @@ function buyItem(item) {
 }
 
 // ════════════════════════════════════════════════════════════════
+//  SKINS
+// ════════════════════════════════════════════════════════════════
+function openSkins() {
+    renderSkins();
+    document.getElementById('skinScreen').classList.remove('hidden');
+}
+function closeSkins() {
+    document.getElementById('skinScreen').classList.add('hidden');
+}
+function renderSkins() {
+    const container = document.getElementById('skinItems');
+    if (!container) return;
+    container.innerHTML = '';
+    SKINS.forEach(skin => {
+        const card = document.createElement('div');
+        card.className = 'skin-card' + (currentSkin === skin.id ? ' active' : '');
+
+        // Preview — всегда canvas, без чёрного фона
+        const wrap = document.createElement('div');
+        wrap.className = 'skin-preview-wrap';
+        const c = document.createElement('canvas');
+        c.width = 90; c.height = 100;
+        const cx = c.getContext('2d');
+        cx.clearRect(0, 0, 90, 100); // transparent
+        const img = images[skin.id];
+        if (img instanceof HTMLImageElement && img.complete && img.naturalWidth > 0) {
+            const iw = img.naturalWidth, ih = img.naturalHeight;
+            const sw = iw > 90 ? 90 : iw;
+            const sh = ih > 90 ? 90 : ih;
+            const scale = Math.min(90 / sw, 90 / sh);
+            const dw = sw * scale, dh = sh * scale;
+            const dx = (90 - dw) / 2, dy = (90 - dh) / 2;
+            if (currentSkin === skin.id) {
+                cx.shadowBlur = 25; cx.shadowColor = '#FFD700';
+            }
+            cx.drawImage(img, 0, 0, sw, sh, dx, dy, dw, dh);
+            cx.shadowBlur = 0;
+            cx.fillStyle = 'rgba(0,0,0,0.25)';
+            cx.beginPath(); cx.ellipse(45, 96, 28, 5, 0, 0, Math.PI*2); cx.fill();
+            c.classList.add('loaded');
+        } else {
+            cx.fillStyle = '#555';
+            cx.font = 'bold 32px sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+            cx.fillText('?', 45, 42);
+            cx.strokeStyle = '#555'; cx.lineWidth = 1; cx.setLineDash([4,4]);
+            cx.strokeRect(10, 5, 70, 80);
+            cx.setLineDash([]);
+        }
+        wrap.appendChild(c);
+        card.appendChild(wrap);
+
+        // Name
+        const name = document.createElement('div');
+        name.className = 'sc-name';
+        name.textContent = skin.name;
+        card.appendChild(name);
+
+        // Price
+        const price = document.createElement('div');
+        price.className = 'sc-price';
+        const owned = skin.bought > 0;
+        price.textContent = owned ? '' : '💰 ' + skin.cost;
+        card.appendChild(price);
+
+        // Button
+        const btn = document.createElement('button');
+        btn.className = 'sc-btn';
+        if (currentSkin === skin.id) {
+            btn.className += ' owned';
+            btn.textContent = '✓ ВЫБРАН';
+        } else if (!owned) {
+            btn.className += ' buy';
+            btn.textContent = 'КУПИТЬ ' + skin.cost;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                if (coins < skin.cost) return;
+                coins -= skin.cost;
+                skin.bought = 1;
+                updateCoinDisplay();
+                currentSkin = skin.id;
+                renderSkins();
+            };
+        } else {
+            btn.className += ' select';
+            btn.textContent = 'ВЫБРАТЬ';
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                currentSkin = skin.id;
+                renderSkins();
+            };
+        }
+        card.appendChild(btn);
+
+        // Click on card = select (if owned)
+        card.onclick = () => {
+            if (currentSkin === skin.id) return;
+            const o = skin.bought > 0;
+            if (!o && coins < skin.cost) return;
+            if (!o) { coins -= skin.cost; skin.bought = 1; updateCoinDisplay(); }
+            currentSkin = skin.id;
+            renderSkins();
+        };
+
+        container.appendChild(card);
+    });
+}
+
+// ════════════════════════════════════════════════════════════════
 //  ABILITIES
 // ════════════════════════════════════════════════════════════════
 function useAbility(idx) {
@@ -664,10 +860,10 @@ function useAbility(idx) {
     if(ab.timer>0) return;
     ab.timer=ab.cooldown;
     if(idx===0) {
-        ab.active=true; ab.activeTimer=180;
+        ab.active=true; ab.activeTimer=ABILITIES[0].duration;
         spawnParticles(player.x,player.y,20,['#00aaff','#ffffff','#0066ff'],6,40,8);
     } else if(idx===1) {
-        const R=280; let killed=0;
+        const R=ABILITIES[1].range||280; let killed=0;
         enemies=enemies.filter(en=>{
             if(Math.hypot(en.x-player.x,en.y-player.y)<R){ spawnExplosion(en.x,en.y,['#aaff00','#ffff00','#fff']); addScore(100); killed++; return false; }
             return true;
@@ -725,7 +921,7 @@ function updateMiniBosses() {
             if(mb.hp<=0){
                 spawnExplosion(mb.x,mb.y,[mb.color,'#ffcc00','#fff']);
                 addScore(mb.reward); coins+=50;
-                document.getElementById('coinVal').innerText=coins;
+                updateCoinDisplay();
                 player.rage=Math.min(100,player.rage+20);
                 miniBosses.splice(i,1); continue;
             }
@@ -874,18 +1070,18 @@ function startGame(diff){
     wave=1; waveTimer=0; inWave=true;
     player={x:600,y:700,targetX:600,targetY:700,angle:0,isDashing:false,dashTimer:0,
         hp:3,maxHp:3,invulnerable:0,rage:0,isRage:false,
-        level:1,xp:0,xpToNext:100,dashCooldown:0,
+        level:1,xp:0,xpToNext:80,dashCooldown:0,
         dashDmg:1,dashRadius:70,dashCooldownMax:50,projectileBlock:false,
         dashVX:0,dashVY:0};
     enemies=[]; miniBosses=[]; projectiles=[]; particles=[]; healthPacks=[]; rocks=[];
     isBossFight=false; boss=null; enemySpawnTimer=0; miniBossSpawnTimer=0; healthPackTimer=0;
-    ABILITIES.forEach(ab=>{ab.timer=0;ab.active=false;ab.activeTimer=0;});
+    ABILITIES.forEach(ab=>{ab.timer=0;ab.active=false;if(ab.activeTimer!==undefined)ab.activeTimer=0;});
     SHOP_ITEMS.forEach(it=>{it.bought=0;});
     gameState='playing'; isPaused=false;
     document.getElementById('menu').style.display='none';
     document.getElementById('death-screen').style.display='none';
     document.getElementById('scoreVal').innerText='0';
-    document.getElementById('coinVal').innerText='0';
+    updateCoinDisplay();
     document.getElementById('boss-phase-ui').style.display='none';
     document.getElementById('waveVal').innerText='1';
     try{ document.getElementById('highVal').innerText=parseInt(localStorage.getItem('highScore')||'0',10)||0; }catch(e){}
@@ -908,7 +1104,7 @@ canvas.addEventListener('mousedown',()=>{
         // FIX: сохраняем направление рывка в момент клика
         const dx=player.targetX-player.x, dy=player.targetY-player.y;
         const len=Math.hypot(dx,dy)||1;
-        const dashSpeed=18;
+        const dashSpeed=16;
         player.dashVX=(dx/len)*dashSpeed;
         player.dashVY=(dy/len)*dashSpeed;
 
@@ -920,7 +1116,11 @@ canvas.addEventListener('mousedown',()=>{
 });
 
 window.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&gameState==='playing'&&!bossLoaderActive) isPaused=!isPaused;
+    if(e.key==='Escape'){
+        if(gameState==='shop'){ closeShop(); return; }
+        if(gameState==='playing'&&!bossLoaderActive){ isPaused=!isPaused; return; }
+    }
+    if(e.code==='KeyM'&&gameState==='playing'&&!bossLoaderActive&&!isPaused){ openShop(); return; }
     if(e.code==='KeyQ') useAbility(0);
     if(e.code==='KeyE') useAbility(1);
     if(e.code==='KeyR') useAbility(2);
@@ -1140,7 +1340,7 @@ function update(){
                 } else {
                     // Полное HP — конвертируем в монеты
                     coins+=50;
-                    document.getElementById('coinVal').innerText=coins;
+                    updateCoinDisplay();
                     spawnParticles(hp.x,hp.y,10,['#FFD700','#ffaa00','#fff'],6,30,6);
                 }
                 healthPacks.splice(i,1); continue;
@@ -1314,8 +1514,9 @@ function draw(){
     else if(player.isDashing){ ctx.shadowBlur=20;ctx.shadowColor='cyan'; }
     if(player.invulnerable>0&&Math.floor(Date.now()/50)%2===0) ctx.globalAlpha=0.3;
     const scaleY=player.isDashing?1.4:1.0;
-    if(images.mark&&images.mark.complete&&images.mark.naturalWidth!==0) ctx.drawImage(images.mark,-45,-45*scaleY,90,90*scaleY);
-    else{ ctx.fillStyle='cyan';ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.fill(); }
+    const skinImg = images[currentSkin];
+    if(skinImg instanceof HTMLImageElement && skinImg.complete && skinImg.naturalWidth > 0) ctx.drawImage(skinImg,-65,-65*scaleY,130,130*scaleY);
+    else{ ctx.fillStyle='cyan';ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.fill(); }
     ctx.restore();
     ctx.restore(); // end shake
 
@@ -1338,6 +1539,14 @@ function loop(){
         if(gameState==='playing') requestAnimationFrame(loop);
     }
 }
+
+// ── Инициализация магазина и скинов ──
+document.getElementById('shopButton').onclick = openShop;
+document.getElementById('closeShopBtn').onclick = closeShop;
+document.getElementById('continueBtnShop').onclick = closeShop;
+document.getElementById('skinsBtn').onclick = openSkins;
+document.getElementById('closeSkinBtn').onclick = closeSkins;
+document.getElementById('backToShopBtn').onclick = closeSkins;
 
 </script>
 </body>
